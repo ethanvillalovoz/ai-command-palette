@@ -6,10 +6,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import streamlit as st
 from action_handlers.summarize_file import summarize_file
+from action_handlers.send_email import send_email
 
 # Sidebar for navigation
 st.sidebar.title("AI Command Palette")
-page = st.sidebar.radio("Choose a command:", ["Home", "Summarize", "Open App"])
+page = st.sidebar.radio("Choose a command:", ["Home", "Summarize", "Open App", "Send Email"])
 
 # Home Page
 if page == "Home":
@@ -18,6 +19,7 @@ if page == "Home":
         This application allows you to perform various commands such as:
         - Summarizing documents
         - Opening applications
+        - Sending emails
         - And more!
         
         Use the sidebar to navigate between commands.
@@ -84,3 +86,23 @@ elif page == "Open App":
                 st.error(f"Error details: {e.stderr.strip()}")
             except Exception as e:
                 st.error(f"An unexpected error occurred: {e}")
+
+# Send Email Page
+elif page == "Send Email":
+    st.title("Send an Email")
+    st.write("Enter the recipient's email address, subject, and your message below.")
+
+    recipient = st.text_input("Recipient Email:")
+    subject = st.text_input("Subject:")  # New input for the subject line
+    message = st.text_area("Message:")
+
+    if st.button("Send Email"):
+        if not recipient or not subject or not message:
+            st.error("Recipient email, subject, and message are required.")
+        else:
+            try:
+                # Mock sending email
+                send_email({"to": recipient, "subject": subject, "message": message})
+                st.success(f"Email sent to {recipient} successfully!")
+            except Exception as e:
+                st.error(f"An error occurred while sending the email: {e}")
