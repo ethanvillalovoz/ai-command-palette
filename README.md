@@ -19,6 +19,7 @@ AI Command Palette is a Streamlit-based application that allows users to perform
 
 ### Prerequisites
 - Python 3.8 or higher
+- Conda installed on your system
 - Gmail account with **App Passwords** enabled (if using Gmail for sending emails)
 
 ### Installation
@@ -28,12 +29,18 @@ AI Command Palette is a Streamlit-based application that allows users to perform
    cd ai-command-palette
    ```
 
-2. Install the required dependencies:
+2. Create a Conda environment:
+   ```bash
+   conda create --name ai_command python=3.8
+   conda activate ai_command
+   ```
+
+3. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Create a `.env` file in the project root directory:
+4. Create a `.env` file in the project root directory:
    ```plaintext
    EMAIL_ADDRESS=your_email@gmail.com
    EMAIL_PASSWORD=your_app_password
@@ -42,18 +49,23 @@ AI Command Palette is a Streamlit-based application that allows users to perform
    - Replace `your_email@gmail.com` with your Gmail address.
    - Replace `your_app_password` with the App Password generated in your Google account.
 
-4. Ensure the `.env` file is ignored by Git:
+5. Ensure the `.env` file is ignored by Git:
    - The `.env` file is already listed in `.gitignore`.
 
 ---
 
 ### Running the Application
-1. Start the Streamlit app:
+1. Activate the Conda environment:
+   ```bash
+   conda activate ai_command
+   ```
+
+2. Start the Streamlit app:
    ```bash
    streamlit run ui/app.py
    ```
 
-2. Open the app in your browser at `http://localhost:8501`.
+3. Open the app in your browser at `http://localhost:8501`.
 
 ---
 

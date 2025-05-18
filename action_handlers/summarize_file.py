@@ -1,56 +1,48 @@
 import os
-import json
-import csv
-from bs4 import BeautifulSoup  # For HTML parsing
-from PyPDF2 import PdfReader  # For PDF parsing
-from docx import Document  # For Word documents
+from openai import OpenAI
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def summarize_file(file_path):
-    """Process a file and provide a summary or relevant output based on its type."""
+    """Process a file and provide AI-powered summarization, sentiment analysis, and keyword extraction."""
     try:
         if not os.path.isfile(file_path):
-            return f"File not found: {file_path}"
+            return {"error": f"File not found: {file_path}"}
 
         _, file_extension = os.path.splitext(file_path)
 
-        if file_extension == ".txt":
-            with open(file_path, 'r') as file:
-                content = file.read()
-                summary = content[:200]  # Mock summary: first 200 characters
-                return f"Summary of {file_path}:\n{summary}"
-        elif file_extension == ".md":
-            with open(file_path, 'r') as file:
-                content = file.read()
-                summary = content[:200]  # Mock summary for Markdown
-                return f"Markdown Summary of {file_path}:\n{summary}"
-        elif file_extension == ".json":
-            with open(file_path, 'r') as file:
-                content = json.load(file)
-                summary = json.dumps(content, indent=2)[:200]  # Mock summary for JSON
-                return f"JSON Summary of {file_path}:\n{summary}"
-        elif file_extension == ".pdf":
+        # Read the file content based on its type
+        if file_extension == ".pdf":
             reader = PdfReader(file_path)
-            content = " ".join(page.extract_text() for page in reader.pages)
-            summary = content[:200]  # Mock summary for PDF
-            return f"PDF Summary of {file_path}:\n{summary}"
-        elif file_extension == ".docx":
-            doc = Document(file_path)
-            content = " ".join(paragraph.text for paragraph in doc.paragraphs)
-            summary = content[:200]  # Mock summary for Word documents
-            return f"Word Document Summary of {file_path}:\n{summary}"
-        elif file_extension == ".csv":
-            with open(file_path, 'r') as file:
-                reader = csv.reader(file)
-                rows = list(reader)
-                summary = f"CSV contains {len(rows)} rows and {len(rows[0]) if rows else 0} columns."
-                return f"CSV Summary of {file_path}:\n{summary}"
-        elif file_extension == ".html":
-            with open(file_path, 'r') as file:
-                soup = BeautifulSoup(file, 'html.parser')
-                content = soup.get_text()
-                summary = content[:200]  # Mock summary for HTML
-                return f"HTML Summary of {file_path}:\n{summary}"
+            content = " ".join(page.extract_text() for page in reader.pages if page.extract_text())
+        elif file_extension in [".txt", ".md", ".json", ".html"]:
+            with open(file_path, 'r', encoding="utf-8") as file:
+                content = file.read()
         else:
-            return f"Unsupported file type: {file_extension}. No summary available."
+            return {"error": f"Unsupported file type: {file_extension}"}
+
+        # Prepare the instructions and input for the OpenAI API
+        instructions = """
+        You are an AI assistant. Analyze the following text and provide:
+        1. A concise summary.
+        2. The overall sentiment (positive, negative, or neutral).
+        3. Key phrases or topics extracted from the text.
+        """
+        input_text = content
+
+        # Call the OpenAI API
+        response = client.responses.create(
+            model="gpt-4.1-nano",
+            instructions=instructions,
+            input=input_text,
+        )
+
+        return {"summary": response.output_text}
     except Exception as e:
-        return f"An error occurred while processing the file: {e}"
+        return {"error": f"An error occurred: {e}"}
